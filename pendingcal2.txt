@@ -1,0 +1,1272 @@
+import React, { useState, useEffect, useCallback, memo } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  InteractionManager,
+} from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Toast } from 'sonner-native';
+
+// Form schema - moved to a separate variable to improve component render performance
+const formSchema = {
+  "groups": [
+    {
+      "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+      "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+      "isShowGroup": true,
+      "isShow": true,
+      "questions": [
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "Xx1GcanDPllbVxyfk28XzQ==",
+          "question": "With the participant lying down and relaxed measure the blood pressure in the right arm followed by the right leg and then the left arm followed by the left leg. Record the systolic blood pressure in all limbs and diastolic blood pressures of the right arm.",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": null,
+          "questionType": "Hint",
+          "dataType": null,
+          "minValue": null,
+          "maxValue": null,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": null,
+          "regex": null,
+          "errorMessage": null
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "u7TY1MjR//NFXaIP/x3FAA==",
+          "question": "BP Time",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": null,
+          "questionType": "Dropdown",
+          "dataType": "String",
+          "options": [
+            { "value": "AM", "label": "AM" },
+            { "value": "PM", "label": "PM" }
+          ],
+          "minValue": null,
+          "maxValue": null,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^[a-zA-Z0-9 !\"#$%&'()*+,-./:;<=>?@[\\\\\\]^_`{|}~]*$/",
+          "errorMessage": "BP Time is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "s2zLDx0/rQH9umzzIZv74w==",
+          "question": "Room Temperature",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": null,
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": null,
+          "maxValue": null,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": false,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Room Temperature is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "xf0DqpQqtuIMALc7IaSenQ==",
+          "question": "Lying",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": null,
+          "questionType": "Label",
+          "dataType": null
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "GEdS6dykLlc2QHeBKYusOA==",
+          "question": "Right arm-Systolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "xf0DqpQqtuIMALc7IaSenQ==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 50,
+          "maxValue": 250,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Right arm-Systolic should be >=50 and <=250 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "lMr6rXDd7EXCBozyoq3yQw==",
+          "question": "Right arm-Diastolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "xf0DqpQqtuIMALc7IaSenQ==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 40,
+          "maxValue": 150,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Right arm-Diastolic should be >=40 and <=150 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "2NW9BIGRy4HSEQl7q73gRA==",
+          "question": "Left arm-Systolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "xf0DqpQqtuIMALc7IaSenQ==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 50,
+          "maxValue": 250,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Left arm-Systolic should be >=50 and <=250 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "/uCjDiPV2W0wumoJfHwWtA==",
+          "question": "Left arm-Diastolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "xf0DqpQqtuIMALc7IaSenQ==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 40,
+          "maxValue": 150,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Left arm-Diastolic should be >=40 and <=150 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "K+gx7qJr9qK83vtkedLX0g==",
+          "question": "Right leg-Systolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "xf0DqpQqtuIMALc7IaSenQ==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 50,
+          "maxValue": 250,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Right leg-Systolic should be >=50 and <=250 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "aIxCNhC17nrTeJ9pFRXbPw==",
+          "question": "Right leg-Diastolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "xf0DqpQqtuIMALc7IaSenQ==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 40,
+          "maxValue": 150,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Right leg-Diastolic should be >=40 and <=150 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "hb9mBYXJCsuPtXLGmF79eA==",
+          "question": "Left leg-Systolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "xf0DqpQqtuIMALc7IaSenQ==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 50,
+          "maxValue": 250,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Left leg-Systolic should be >=50 and <=250 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "JFeNTgszZNYD8h5HVI5cOA==",
+          "question": "Left leg-Diastolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "xf0DqpQqtuIMALc7IaSenQ==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 40,
+          "maxValue": 150,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Left leg-Diastolic should be >=40 and <=150 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "QDLMNAHuM5qD5BlcHctAtw==",
+          "question": "Count the pulse rate for 30 seconds at the right wrist, and multiply by two to calculate the rate per minute.",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "xf0DqpQqtuIMALc7IaSenQ==",
+          "questionType": "Hint",
+          "dataType": null
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "V0P1bOxKJEudFjsUjN35Cw==",
+          "question": "Pulse count",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "xf0DqpQqtuIMALc7IaSenQ==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 30,
+          "maxValue": 200,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Pulse count should be >=30 and <=200 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "Fcy54C5IfvasRDDzeybFKg==",
+          "question": "Standing",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": null,
+          "questionType": "Label",
+          "dataType": null
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "6sm784Hz97Kq8hjYfSJD/A==",
+          "question": "With the participant standing and relaxed measure the blood pressure in the right arm. Record the systolic and diastolic blood pressures",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": null,
+          "questionType": "Hint",
+          "dataType": null
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "WCoLq1CdYJ8pRWj1blEjMw==",
+          "question": "Right arm-Systolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "Fcy54C5IfvasRDDzeybFKg==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 50,
+          "maxValue": 250,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Right arm-Systolic should be >=50 and <=250 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "wwmkeKEl3ZxxDEv6idiu3Q==",
+          "question": "Right arm-Diastolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "Fcy54C5IfvasRDDzeybFKg==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 40,
+          "maxValue": 150,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Right arm-Diastolic should be >=40 and <=150 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "t7ujzQt9DJ1ktD0rRzg+WQ==",
+          "question": "Left arm-Systolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "Fcy54C5IfvasRDDzeybFKg==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 50,
+          "maxValue": 250,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Left arm-Systolic should be >=50 and <=250 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "tgzp2orM2TekxkbQ2lJeiQ==",
+          "question": "Left arm-Diastolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "Fcy54C5IfvasRDDzeybFKg==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 40,
+          "maxValue": 150,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Left arm-Diastolic should be >=40 and <=150 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "7bHt01r3uhAhR486aM18ug==",
+          "question": "Right leg-Systolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "Fcy54C5IfvasRDDzeybFKg==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 50,
+          "maxValue": 250,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Right leg-Systolic should be >=50 and <=250 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "LuBQ5gm0zb7YCs7+Gyv0vA==",
+          "question": "Right leg-Diastolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "Fcy54C5IfvasRDDzeybFKg==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 40,
+          "maxValue": 150,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Right leg-Diastolic should be >=40 and <=150 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "xiq7M/rNf9US5SSDGZD7JQ==",
+          "question": "Left leg-Systolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "Fcy54C5IfvasRDDzeybFKg==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 50,
+          "maxValue": 250,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Left leg-Systolic should be >=50 and <=250 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "Xz7tZQEmI3h8d62zf6+NHg==",
+          "question": "Left leg-Diastolic",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "Fcy54C5IfvasRDDzeybFKg==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 40,
+          "maxValue": 150,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Left leg-Diastolic should be >=40 and <=150 or '#1' or '#2' and is Required."
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "TQKhQ1G1eHlutGWC7gZUNQ==",
+          "question": "Count the pulse rate for 30 seconds at the right wrist, and multiply by two to calculate the rate per minute.",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "Fcy54C5IfvasRDDzeybFKg==",
+          "questionType": "Hint",
+          "dataType": null
+        },
+        {
+          "groupId": "Y7Ubn6c7hvLjihiwyLyQ/w==",
+          "groupName": "Systolic-BP, Diastolic-BP and Pulse count",
+          "isShowGroup": true,
+          "questionId": "O5QimQ+bq58s4yxzWglU3Q==",
+          "question": "Pulse count",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": "Fcy54C5IfvasRDDzeybFKg==",
+          "questionType": "TextBox",
+          "dataType": "Decimal",
+          "minValue": 30,
+          "maxValue": 200,
+          "controlValue": null,
+          "defaultValues": "",
+          "required": true,
+          "regex": "/^(-?[0-9]*\\.?[0-9]*|#[12])$/",
+          "errorMessage": "Pulse count should be >=30 and <=200 or '#1' or '#2' and is Required."
+        }
+      ]
+    },
+    {
+      "groupId": "4B1QmJBAsAaLln5kYbI+JA==",
+      "groupName": "Ankle Brachial pressure index(all entries to be calculated automatically)",
+      "isShowGroup": true,
+      "isShow": true,
+      "questions": [
+        {
+          "groupId": "4B1QmJBAsAaLln5kYbI+JA==",
+          "groupName": "Ankle Brachial pressure index(all entries to be calculated automatically)",
+          "isShowGroup": true,
+          "questionId": "xGvqxL7ioZ/zLPqR6CQcDQ==",
+          "question": "Ankle Brachial pressure index",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": null,
+          "questionType": "Label",
+          "dataType": null
+        },
+        {
+          "groupId": "4B1QmJBAsAaLln5kYbI+JA==",
+          "groupName": "Ankle Brachial pressure index(all entries to be calculated automatically)",
+          "isShowGroup": true,
+          "questionId": "GxjpL8ZmV1GweIPYla/ESA==",
+          "question": "Systolic blood pressure was recorded in the supine position starting with the right arm, the right leg, the left leg, and the left arm. The ABI was calculated by dividing the ankle systolic blood pressure by the brachial systolic blood pressure of the respective sides.",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": null,
+          "questionType": "Hint",
+          "dataType": null
+        },
+        {
+          "groupId": "4B1QmJBAsAaLln5kYbI+JA==",
+          "groupName": "Ankle Brachial pressure index(all entries to be calculated automatically)",
+          "isShowGroup": true,
+          "questionId": "iykLBSWbtn0OMUbQG7MPQw==",
+          "question": "Right leg/Right arm",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": null,
+          "questionType": "Hint",
+          "dataType": null
+        },
+        {
+          "groupId": "4B1QmJBAsAaLln5kYbI+JA==",
+          "groupName": "Ankle Brachial pressure index(all entries to be calculated automatically)",
+          "isShowGroup": true,
+          "questionId": "Jk8FlprRv/8fswG4/DEMWw==",
+          "question": "Right side: Ankle Brachial pressure index",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": null,
+          "questionType": "ReadOnly",
+          "dataType": null,
+          "formula": "(${K+gx7qJr9qK83vtkedLX0g==}/${GEdS6dykLlc2QHeBKYusOA==})"
+        },
+        {
+          "groupId": "4B1QmJBAsAaLln5kYbI+JA==",
+          "groupName": "Ankle Brachial pressure index(all entries to be calculated automatically)",
+          "isShowGroup": true,
+          "questionId": "ItChvQgepWh2pCYVrdNdNA==",
+          "question": "Left leg/Left arm",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": null,
+          "questionType": "Hint",
+          "dataType": null
+        },
+        {
+          "groupId": "4B1QmJBAsAaLln5kYbI+JA==",
+          "groupName": "Ankle Brachial pressure index(all entries to be calculated automatically)",
+          "isShowGroup": true,
+          "questionId": "1V+xT+4WH9MmdN99ENyh9w==",
+          "question": "Left side: Ankle Brachial pressure index",
+          "isShowInput": true,
+          "isGenderSpecific": "3",
+          "parentQuestionId": null,
+          "questionType": "ReadOnly",
+          "dataType": null,
+          "formula": "(${hb9mBYXJCsuPtXLGmF79eA==}/${2NW9BIGRy4HSEQl7q73gRA==})"
+        }
+      ]
+    }
+  ]
+};
+
+const ODKCollectForm = () => {
+  const [formData, setFormData] = useState({});
+  const [errors, setErrors] = useState({});
+  const [activeGroupIndex, setActiveGroupIndex] = useState(null);
+  const [isGroupListView, setIsGroupListView] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    // Initialize form data with default values
+    const initialData = {};
+    formSchema.groups.forEach(group => {
+      group.questions.forEach(question => {
+        if (question.defaultValues) {
+          initialData[question.questionId] = question.defaultValues;
+        }
+      });
+    });
+    setFormData(initialData);
+  }, []);
+
+  const handleGroupSelect = (index) => {
+    setActiveGroupIndex(index);
+    setIsGroupListView(false);
+  };  const navigateToGroup = (direction) => {
+    const newIndex = activeGroupIndex + direction;
+    if (newIndex >= 0 && newIndex < formSchema.groups.length) {
+      // If moving forward, validate current group
+      if (direction > 0) {
+        const currentGroup = formSchema.groups[activeGroupIndex];
+        
+        // Debug logging for required fields
+        console.log("Required fields check:");
+        let requiredFieldsFilled = true;
+        
+        // Check all required fields in this group
+        const groupErrors = {};
+        currentGroup.questions.forEach(question => {
+          if (shouldShowQuestion(question) && question.required === true) {
+            const value = formData[question.questionId];
+            console.log(`Field ${question.question}: value=${value}, required=${question.required}`);
+            
+            // Special handling for #1 and #2 values which are valid entries
+            const specialValues = ['#1', '#2'];
+            const isValid = 
+              value !== undefined && 
+              value !== null && 
+              value !== '' || 
+              (typeof value === 'string' && specialValues.includes(value));
+            
+            if (!isValid) {
+              groupErrors[question.questionId] = question.errorMessage || `${question.question} is required`;
+              requiredFieldsFilled = false;
+            }
+          }
+        });
+        
+        if (!requiredFieldsFilled) {
+          setErrors(prev => ({ ...prev, ...groupErrors }));
+          Toast.error('Please fill in all required fields before proceeding');
+          return;
+        }
+      }
+      
+      // If validation passed or we're moving backward
+      setActiveGroupIndex(newIndex);
+      
+      // Scroll to top when changing groups using React Native safe approach
+      InteractionManager.runAfterInteractions(() => {
+        // We can't use DOM methods in React Native, so just reset the scroll position
+        // This will be properly handled by the component rerender
+      });
+    }
+  };
+
+  const returnToGroupList = () => {
+    setIsGroupListView(true);
+    setActiveGroupIndex(null);
+  };
+
+  const validateGroup = (group) => {
+    let groupErrors = {};
+    group.questions.forEach(question => {
+      if (shouldShowQuestion(question)) {
+        const error = validateQuestion(question, formData[question.questionId]);
+        if (error) {
+          groupErrors[question.questionId] = error;
+        }
+      }
+    });
+    return groupErrors;
+  };
+
+  const validateQuestion = (question, value) => {
+    // Skip validation for hidden or calculation questions
+    if (!shouldShowQuestion(question) || question.questionType === 'Calculation') {
+      return null;
+    }
+
+    // Check required
+    if (question.required && (value === undefined || value === null || value === '')) {
+      return 'This field is required';
+    }
+
+    // Check min/max for numeric values
+    if (
+      (question.dataType === 'Decimal' || question.dataType === 'Integer') && 
+      value !== '' && 
+      value !== null
+    ) {
+      const numValue = parseFloat(value);
+      if (isNaN(numValue)) {
+        return 'Please enter a valid number';
+      } else if (question.minValue !== null && numValue < question.minValue) {
+        return question.errorMessage || 'Value must be at least ' + question.minValue;
+      } else if (question.maxValue !== null && numValue > question.maxValue) {
+        return question.errorMessage || 'Value must be at most ' + question.maxValue;
+      } else if (question.regex && !new RegExp(question.regex).test(value)) {
+        return question.errorMessage || 'Invalid format';
+      }
+    } 
+    // Check regex for text values
+    else if (question.regex && value !== '' && !new RegExp(question.regex).test(value)) {
+      return question.errorMessage || 'Invalid format';
+    }
+
+    return null;
+  };
+
+  const handleInputChange = (questionId, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
+
+    // Validate input
+    const question = findQuestionById(questionId);
+    if (question) {
+      const error = validateQuestion(question, value);
+      setErrors(prev => ({
+        ...prev,
+        [questionId]: error
+      }));
+    }
+
+    // Calculate any dependent values
+    calculateDependentValues(questionId, value);
+  };
+
+  const findQuestionById = (questionId) => {
+    for (const group of formSchema.groups) {
+      const question = group.questions.find(q => q.questionId === questionId);
+      if (question) return question;
+    }
+    return null;
+  };
+
+  const calculateDependentValues = (changedQuestionId) => {
+    // Find all calculation questions
+    formSchema.groups.forEach(group => {
+      group.questions.forEach(question => {
+        if (question.questionType === 'Calculation' && question.formula) {
+          // Always recalculate all calculation fields when any value changes
+          // This avoids issues with detecting dependencies
+          updateCalculation(question);
+        }
+      });
+    });
+  };  const updateCalculation = (question) => {
+    // Handle specific calculation formulas directly
+    if (!question.formula) return;
+    
+    try {
+      console.log(`Calculating ${question.question} with formula: ${question.formula}`);
+      
+      // Direct calculation for right ABI
+      if (question.questionId === 'Jk8FlprRv/8fswG4/DEMWw==') {
+        const rightLegSystolic = parseFloat(formData['K+gx7qJr9qK83vtkedLX0g==']);
+        const rightArmSystolic = parseFloat(formData['GEdS6dykLlc2QHeBKYusOA==']);
+        
+        console.log(`Right leg systolic: ${rightLegSystolic}, Right arm systolic: ${rightArmSystolic}`);
+        
+        if (!isNaN(rightLegSystolic) && !isNaN(rightArmSystolic) && rightArmSystolic > 0) {
+          const result = (rightLegSystolic / rightArmSystolic).toFixed(2);
+          console.log(`Right ABI result: ${result}`);
+          
+          setFormData(prev => ({
+            ...prev,
+            [question.questionId]: result
+          }));
+        } else {
+          console.log("Cannot calculate right ABI - missing or invalid values");
+        }
+      }
+      // Direct calculation for left ABI
+      else if (question.questionId === '1V+xT+4WH9MmdN99ENyh9w==') {
+        const leftLegSystolic = parseFloat(formData['hb9mBYXJCsuPtXLGmF79eA==']);
+        const leftArmSystolic = parseFloat(formData['2NW9BIGRy4HSEQl7q73gRA==']);
+        
+        console.log(`Left leg systolic: ${leftLegSystolic}, Left arm systolic: ${leftArmSystolic}`);
+        
+        if (!isNaN(leftLegSystolic) && !isNaN(leftArmSystolic) && leftArmSystolic > 0) {
+          const result = (leftLegSystolic / leftArmSystolic).toFixed(2);
+          console.log(`Left ABI result: ${result}`);
+          
+          setFormData(prev => ({
+            ...prev,
+            [question.questionId]: result
+          }));
+        } else {
+          console.log("Cannot calculate left ABI - missing or invalid values");
+        }
+      }
+    } catch (error) {
+      console.error("Calculation error:", error);
+    }
+  };
+
+  const shouldShowQuestion = (question) => {
+    // If question has a parent, only show if parent value matches
+    if (question.parentQuestionId) {
+      const parentValue = formData[question.parentQuestionId]?.toString();
+      return parentValue === question.parentQuestionValue;
+    }
+    
+    return question.isShowInput !== false;
+  };
+
+  const handleSubmit = async () => {
+    // Validate all fields before submission
+    let allErrors = {};
+    let hasErrors = false;
+
+    formSchema.groups.forEach(group => {
+      const groupErrors = validateGroup(group);
+      if (Object.keys(groupErrors).length > 0) {
+        hasErrors = true;
+        allErrors = { ...allErrors, ...groupErrors };
+      }
+    });
+
+    setErrors(allErrors);
+
+    if (hasErrors) {
+      Toast.error('Please fix all errors before submitting');
+      return;
+    }
+
+    // Simulate form submission
+    setIsSubmitting(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      Toast.success('Form submitted successfully');
+      console.log('Form data:', formData);
+      
+      // Reset form after successful submission
+      returnToGroupList();
+    } catch (error) {
+      Toast.error('Submission failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };  const renderQuestionInput = useCallback((question) => {
+    switch (question.questionType) {
+      case 'TextBox':
+        return (
+          <TextInput
+            style={[
+              styles.input,
+              errors[question.questionId] ? styles.inputError : null
+            ]}
+            value={formData[question.questionId]?.toString() || ''}
+            onChangeText={(text) => handleInputChange(question.questionId, text)}
+            keyboardType={
+              question.dataType === 'Decimal' || question.dataType === 'Integer' 
+                ? 'numeric' 
+                : 'default'
+            }
+            placeholder={'Enter ' + question.question}
+          />
+        );
+      
+      case 'Radio':
+        return (
+          <View style={styles.radioContainer}>
+            {question.options?.map((option, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.radioOption}
+                onPress={() => handleInputChange(question.questionId, option.value)}
+              >
+                <View style={styles.radioCircle}>
+                  {formData[question.questionId] === option.value && (
+                    <View style={styles.selectedRadioCircle} />
+                  )}
+                </View>
+                <Text style={styles.radioLabel}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        );
+      
+      case 'Dropdown':
+        return (
+          <View style={styles.selectContainer}>
+            {question.options?.map((option, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.selectOption,
+                  formData[question.questionId] === option.value && styles.selectedOption
+                ]}
+                onPress={() => handleInputChange(question.questionId, option.value)}
+              >
+                <Text style={[
+                  styles.selectOptionText,
+                  formData[question.questionId] === option.value && styles.selectedOptionText
+                ]}>
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        );
+      
+      case 'Select':
+        return (
+          <View style={styles.selectContainer}>
+            {question.options?.map((option, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.selectOption,
+                  formData[question.questionId] === option.value && styles.selectedOption
+                ]}
+                onPress={() => handleInputChange(question.questionId, option.value)}
+              >
+                <Text style={[
+                  styles.selectOptionText,
+                  formData[question.questionId] === option.value && styles.selectedOptionText
+                ]}>
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        );
+      
+      case 'Calculation':
+      case 'ReadOnly':
+        return (
+          <View style={styles.calculationField}>
+            <Text style={styles.calculationValue}>
+              {formData[question.questionId] !== undefined 
+                ? formData[question.questionId].toString() 
+                : 'Pending calculation...'}
+            </Text>
+          </View>
+        );
+        
+      case 'Hint':
+        return (
+          <View style={styles.hintContainer}>
+            <Text style={styles.hintText}>{question.question}</Text>
+          </View>
+        );
+        
+      case 'Label':
+        return (
+          <View style={styles.labelContainer}>
+            <Text style={styles.labelText}>{question.question}</Text>
+          </View>
+        );
+      
+      default:
+        return <Text>Unsupported question type: {question.questionType}</Text>;
+    }
+  }, [formData, errors, handleInputChange]);
+
+  const renderGroupListView = () => (
+    <View style={styles.groupListContainer}>
+      <Text style={styles.formTitle}>Health Assessment Form</Text>
+      <Text style={styles.groupSelectionText}>Select a section to complete:</Text>
+      
+      {formSchema.groups.map((group, index) => (
+        <TouchableOpacity 
+          key={group.groupId}
+          style={styles.groupListItem}
+          onPress={() => handleGroupSelect(index)}
+        >
+          <Text style={styles.groupListName}>{group.groupName}</Text>
+          <MaterialIcons name="chevron-right" size={24} color="#777" />
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+
+  const renderGroupQuestionsView = () => {
+    if (activeGroupIndex === null) return null;
+    
+    const currentGroup = formSchema.groups[activeGroupIndex];
+    return (
+      <View style={styles.groupQuestionsContainer}>
+        <View style={styles.groupHeader}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={returnToGroupList}
+          >
+            <MaterialIcons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.groupTitle}>{currentGroup.groupName}</Text>
+          <View style={{width: 24}} /> {/* Placeholder for alignment */}
+        </View>
+
+        <ScrollView style={styles.questionsScrollView}>
+          {currentGroup.questions.map((question) => (
+            shouldShowQuestion(question) && (
+              <View key={question.questionId} style={styles.question}>
+                <Text style={styles.questionText}>
+                  {question.question}
+                  {question.required && <Text style={styles.requiredStar}> *</Text>}
+                </Text>
+                
+                {renderQuestionInput(question)}
+                
+                {errors[question.questionId] && (
+                  <Text style={styles.errorText}>{errors[question.questionId]}</Text>
+                )}
+              </View>
+            )
+          ))}
+          
+          <View style={styles.navigationButtonsContainer}>
+            <TouchableOpacity
+              style={[
+                styles.navigationButton,
+                activeGroupIndex === 0 ? styles.navigationButtonDisabled : {}
+              ]}
+              onPress={() => navigateToGroup(-1)}
+              disabled={activeGroupIndex === 0}
+            >
+              <MaterialIcons name="navigate-before" size={20} color={activeGroupIndex === 0 ? "#aaa" : "white"} />
+              <Text style={styles.navigationButtonText}>Previous</Text>
+            </TouchableOpacity>
+            
+            {activeGroupIndex === formSchema.groups.length - 1 ? (
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <Text style={styles.submitButtonText}>Submit Form</Text>
+                )}
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.navigationButton}
+                onPress={() => navigateToGroup(1)}
+              >
+                <Text style={styles.navigationButtonText}>Next</Text>
+                <MaterialIcons name="navigate-next" size={20} color="white" />
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {/* Add some padding at the bottom for scrolling */}
+          <View style={{ height: 40 }} />
+        </ScrollView>
+      </View>
+    );
+  };
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+    >
+      {isGroupListView ? renderGroupListView() : renderGroupQuestionsView()}
+    </KeyboardAvoidingView>
+  );
+};
+
+const styles = StyleSheet.create({
+  // Group List View Styles
+  groupListContainer: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#f9f9f9',
+  },
+  formTitle: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 24,
+    color: '#333',
+    textAlign: 'center',
+  },
+  groupSelectionText: {
+    fontSize: 18,
+    color: '#666',
+    marginBottom: 16,
+  },
+  groupListItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 18,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  groupListName: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#444',
+  },
+  
+  // Group Questions View Styles
+  groupQuestionsContainer: {
+    flex: 1,
+    backgroundColor: '#f9f9f9',
+  },
+  groupHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    backgroundColor: '#f2f2f2',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  backButton: {
+    padding: 4,
+  },
+  groupTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+    flex: 1,
+  },
+  questionsScrollView: {
+    flex: 1,
+    padding: 16,
+  },
+  
+  // Questions & Inputs Styles
+  question: {
+    marginBottom: 20,
+  },
+  questionText: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 8,
+    color: '#333',
+  },
+  requiredStar: {
+    color: '#ff3b30',
+    fontWeight: 'bold',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    padding: 14,
+    borderRadius: 8,
+    fontSize: 16,
+    backgroundColor: '#fafafa',
+  },
+  inputError: {
+    borderColor: '#ff3b30',
+  },
+  errorText: {
+    color: '#ff3b30',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  
+  // Radio Button Styles
+  radioContainer: {
+    marginTop: 8,
+  },
+  radioOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  radioCircle: {
+    height: 24,
+    width: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#007aff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  selectedRadioCircle: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#007aff',
+  },
+  radioLabel: {
+    fontSize: 16,
+    color: '#333',
+  },
+  
+  // Select Option Styles
+  selectContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+  },
+  selectOption: {
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    marginRight: 10,
+    marginBottom: 10,
+    backgroundColor: '#f9f9f9',
+  },
+  selectedOption: {
+    backgroundColor: '#007aff',
+    borderColor: '#007aff',
+  },
+  selectOptionText: {
+    color: '#333',
+    fontSize: 16,
+  },
+  selectedOptionText: {
+    color: 'white',
+  },
+  
+  // Calculation Field Styles
+  calculationField: {
+    padding: 14,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  calculationValue: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#555',
+  },
+  
+  // Navigation & Submit Button Styles
+  navigationButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 24,
+    marginBottom: 10,
+  },
+  navigationButton: {
+    backgroundColor: '#007aff',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 120,
+  },
+  navigationButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  navigationButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  submitButton: {
+    backgroundColor: '#34c759',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 120,
+  },
+  submitButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
+
+export default ODKCollectForm;
